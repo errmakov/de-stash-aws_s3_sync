@@ -3,7 +3,7 @@ name: Compress Files
 on:
   push:
     branches:
-      - master
+      - master # or the branch you want to trigger this action
 
 jobs:
   build:
@@ -29,3 +29,14 @@ jobs:
 
       - name: List files in dist directory
         run: ls -l dist
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+
+      - name: Commit archive
+        run: |
+          git add dist/aws_s3_sync.gz
+          git commit -m 'Update build'
+          git push
