@@ -1,0 +1,31 @@
+name: Compress Files
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository content
+        uses: actions/checkout@v2
+
+      - name: Set up the environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gzip
+
+      - name: Create dist directory
+        run: mkdir -p dist/aws_s3_sync
+
+      - name: Copy src content to aws_s3_sync directory
+        run: cp -r src/* dist/aws_s3_sync/
+
+      - name: Compress aws_s3_sync directory
+        run: tar -czf dist/aws_s3_sync.gz -C dist aws_s3_sync
+
+      - name: List files in dist directory
+        run: ls -l dist
