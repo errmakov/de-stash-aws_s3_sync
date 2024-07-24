@@ -1,6 +1,6 @@
 # aws_s3_sync.sh
 
-Wrapper for "aws s3 sync"
+Wrapper for "aws s3 sync"d
 
 ## Installation
 
@@ -53,3 +53,4 @@ aws_secret_access_key = %secret_you_obtained%
 ---
 
 [^1]: jq is a json processor, [https://jqlang.github.io/jq/](https://jqlang.github.io/jq/)
+Wed Jul 24 11:27:22 CEST 2024
