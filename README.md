@@ -1,6 +1,6 @@
 # aws_s3_sync.sh
 
-Wrapper for "aws s3 sync"d
+Wrapper for "aws s3 sync"
 
 ## Installation
 
@@ -52,14 +52,15 @@ aws_secret_access_key = %secret_you_obtained%
 
 ---
 
-[^1]: jq is a json processor, [https://jqlang.github.io/jq/](https://jqlang.github.io/jq/)
-Wed Jul 24 11:27:22 CEST 2024
-Wed Jul 24 11:28:50 CEST 2024
-Wed Jul 24 11:30:10 CEST 2024
-Wed Jul 24 11:38:42 CEST 2024
-Wed Jul 24 11:39:24 CEST 2024
-Wed Jul 24 11:39:39 CEST 2024
-Wed Jul 24 11:41:23 CEST 2024
-Wed Jul 24 11:42:22 CEST 2024
-Wed Jul 24 11:51:56 CEST 2024
-Wed Jul 24 11:54:31 CEST 2024
+[^1]:
+    jq is a json processor, [https://jqlang.github.io/jq/](https://jqlang.github.io/jq/)
+    Wed Jul 24 11:27:22 CEST 2024
+    Wed Jul 24 11:28:50 CEST 2024
+    Wed Jul 24 11:30:10 CEST 2024
+    Wed Jul 24 11:38:42 CEST 2024
+    Wed Jul 24 11:39:24 CEST 2024
+    Wed Jul 24 11:39:39 CEST 2024
+    Wed Jul 24 11:41:23 CEST 2024
+    Wed Jul 24 11:42:22 CEST 2024
+    Wed Jul 24 11:51:56 CEST 2024
+    Wed Jul 24 11:54:31 CEST 2024
