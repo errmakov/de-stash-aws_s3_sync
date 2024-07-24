@@ -36,7 +36,9 @@ jobs:
           git config --global user.email 'github-actions@github.com'
 
       - name: Commit archive
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_DEPLOY_KEY }}
         run: |
           git add dist/aws_s3_sync.gz
-          git commit -m 'Update build'
-          git push
+          git commit -m 'Add compressed archive of src directory'
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
