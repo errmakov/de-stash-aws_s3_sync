@@ -47,5 +47,5 @@ jobs:
         run: |
           git add dist/aws_s3_sync.gz
           git commit -m 'Add compressed archive of src directory'
-          git remote set-url origin https://x-access-token:${{ secrets.ACTIONS_DEPLOY_KEY }}@github.com:${{ github.repository }}.git
+          git remote set-url origin https://x-access-token:${{ secrets.ACTIONS_DEPLOY_KEY }}@github.com/${{ github.repository }}.git
           git push origin HEAD:${{ github.ref }}
