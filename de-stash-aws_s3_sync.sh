@@ -20,7 +20,7 @@ usage() {
 
 # Default values for lock directory and log file
 LOCK_DIR="/var/lock/aws_s3_sync.lock"
-LOG_FILE="/log/aws_s3_sync.log"
+LOG_FILE="/var/log/aws_s3_sync.log"
 DEBUG_FILE="/tmp/aws_s3_sync_debug.log"
 
 # Generate a unique ID for this script call
@@ -156,3 +156,4 @@ fi
 # Exit the script with the same return code
 echo "Exiting script with return code: $RETURN_CODE" | tee -a "$DEBUG_FILE"
 exit $RETURN_CODE
+    
