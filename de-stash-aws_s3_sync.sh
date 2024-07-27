@@ -127,12 +127,12 @@ extra_info=$(jq -n \
 if [ $RETURN_CODE -eq 0 ]; then
     log_message "info" "Sync successful." "$extra_info"
     if [ "$SHOW_OUTPUT" == "true" ]; then
-        echo "Well done. Details: ${LOG_FILE}"
+        echo "Well done. Source directory: $SOURCE. Details: ${LOG_FILE}"
     fi
 elif [ $RETURN_CODE -eq 1 ]; then
     log_message "error" "Sync failed due to a general error, exit code 1" "$extra_info"
     echo -e "Error.\nExit code 1: ${SYNC_OUTPUT}\nUNIQUE_ID ${UNIQUE_ID}" >&2
-elif [ $RETURN_CODE -eq 2 ]; then
+elif [ $RETURN_CODE -eq 2]; then
     log_message "error" "Sync failed due to a permission error, exit code 2" "$extra_info"
     echo -e "Error.\nExit code 2: ${SYNC_OUTPUT}\nUNIQUE_ID ${UNIQUE_ID}" >&2
 else
