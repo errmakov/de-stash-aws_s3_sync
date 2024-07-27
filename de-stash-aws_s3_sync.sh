@@ -20,7 +20,7 @@ usage() {
 
 # Default values for lock directory and log file
 LOCK_DIR="/var/lock/aws_s3_sync.lock"
-LOG_FILE="/log/aws_s3_sync.log"
+LOG_FILE="/var/log/aws_s3_sync.log"
 
 # Generate a unique ID for this script call
 UNIQUE_ID=$(date +%s%N)-$$-$(od -vAn -N4 -tu4 < /dev/urandom | tr -d ' ')
