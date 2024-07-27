@@ -94,12 +94,6 @@ exec 200>"$LOCK_FILE"
 # Acquire the lock
 flock -n 200 || exit 1
 
-# Ensure the lock file has the correct permissions
-CURRENT_USER=$(whoami)
-CURRENT_GROUP=$(id -gn)
-chown "$CURRENT_USER:$CURRENT_GROUP" "$LOCK_FILE"
-chmod 660 "$LOCK_FILE"
-
 # Run the aws s3 sync command with provided arguments
 SYNC_OUTPUT=$(aws s3 sync "$SOURCE" "$DESTINATION" "$@" 2>&1)
 RETURN_CODE=$?
