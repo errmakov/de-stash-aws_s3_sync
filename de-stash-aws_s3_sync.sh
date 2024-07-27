@@ -7,7 +7,7 @@ usage() {
     echo ""
     echo "Options:"
     echo "  --o                 Show output details on successful sync"
-    echo "  --lock <file>       File for lock (default: /var/lock/aws_s3_sync.lock)"
+    echo "  --lock <dir>        Directory for lock (default: /var/lock/aws_s3_sync.lock)"
     echo "  --log <file>        Log file path (default: /var/log/aws_s3_sync.log)"
     echo "  --help, -h, -?      Display this help message"
     echo ""
@@ -18,8 +18,8 @@ usage() {
     exit 0
 }
 
-# Default values for lock file and log file
-LOCK_FILE="/var/lock/aws_s3_sync.lock"
+# Default values for lock directory and log file
+LOCK_DIR="/var/lock/aws_s3_sync.lock"
 LOG_FILE="/var/log/aws_s3_sync.log"
 DEBUG_FILE="/tmp/aws_s3_sync_debug.log"
 
@@ -38,10 +38,20 @@ log_message() {
         --argjson extra_info "$extra_info" \
         '{timestamp: $timestamp, unique_id: $unique_id, status: $status, message: $message, extra_info: $extra_info}')
     
-    # Use flock to ensure exclusive access to the log file
-    exec 200>"$LOCK_FILE"
-    flock -n 200 || exit 1
-    trap 'rm -f "$LOCK_FILE"' EXIT
+    # Use mkdir to ensure exclusive access to the log file
+    echo "Attempting to create lock directory: $LOCK_DIR" | tee -a "$DEBUG_FILE"
+    while ! mkdir "$LOCK_DIR" 2>/dev/null; do
+        echo "Waiting for lock on directory: $LOCK_DIR" | tee -a "$DEBUG_FILE"
+        sleep 0.1
+    done
+    
+    # Set the correct permissions for the lock directory
+    CURRENT_USER=$(whoami)
+    CURRENT_GROUP=$(id -gn)
+    chown "$CURRENT_USER:$CURRENT_GROUP" "$LOCK_DIR"
+    chmod 2775 "$LOCK_DIR"
+    
+    trap 'echo "Removing lock directory: $LOCK_DIR" | tee -a "$DEBUG_FILE"; rmdir "$LOCK_DIR"' EXIT
 
     echo "Appending log entry to: $LOG_FILE" | tee -a "$DEBUG_FILE"
     echo "$log_entry" >> "$LOG_FILE"
@@ -62,7 +72,7 @@ while [[ "$#" -gt 0 ]]; do
             shift
             ;;
         --lock)
-            LOCK_FILE="$2"
+            LOCK_DIR="$2"
             shift 2
             ;;
         --log)
@@ -101,7 +111,7 @@ echo "Log file directory ensured" | tee -a "$DEBUG_FILE"
 # Debugging output
 echo "Running aws s3 sync from $SOURCE to $DESTINATION with options: $*" | tee -a "$DEBUG_FILE"
 echo "Log file: $LOG_FILE" | tee -a "$DEBUG_FILE"
-echo "Lock file: $LOCK_FILE" | tee -a "$DEBUG_FILE"
+echo "Lock dir: $LOCK_DIR" | tee -a "$DEBUG_FILE"
 
 # Run the aws s3 sync command with provided arguments
 echo "Starting aws s3 sync" | tee -a "$DEBUG_FILE"
