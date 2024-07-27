@@ -38,21 +38,6 @@ log_message() {
         --argjson extra_info "$extra_info" \
         '{timestamp: $timestamp, unique_id: $unique_id, status: $status, message: $message, extra_info: $extra_info}')
     
-    # Use mkdir to ensure exclusive access to the log file
-    echo "Attempting to create lock directory: $LOCK_DIR" | tee -a "$DEBUG_FILE"
-    while ! mkdir "$LOCK_DIR" 2>/dev/null; do
-        echo "Waiting for lock on directory: $LOCK_DIR" | tee -a "$DEBUG_FILE"
-        sleep 0.1
-    done
-    
-    # Set the correct permissions for the lock directory
-    CURRENT_USER=$(whoami)
-    CURRENT_GROUP=$(id -gn)
-    chown "$CURRENT_USER:$CURRENT_GROUP" "$LOCK_DIR"
-    chmod 2775 "$LOCK_DIR"
-    
-    trap 'echo "Removing lock directory: $LOCK_DIR" | tee -a "$DEBUG_FILE"; rmdir "$LOCK_DIR"' EXIT
-
     echo "Appending log entry to: $LOG_FILE" | tee -a "$DEBUG_FILE"
     echo "$log_entry" >> "$LOG_FILE"
     echo "Log entry added" | tee -a "$DEBUG_FILE"
@@ -112,6 +97,30 @@ echo "Log file directory ensured" | tee -a "$DEBUG_FILE"
 echo "Running aws s3 sync from $SOURCE to $DESTINATION with options: $*" | tee -a "$DEBUG_FILE"
 echo "Log file: $LOG_FILE" | tee -a "$DEBUG_FILE"
 echo "Lock dir: $LOCK_DIR" | tee -a "$DEBUG_FILE"
+
+# Handle lock directory creation
+echo "Attempting to create lock directory: $LOCK_DIR" | tee -a "$DEBUG_FILE"
+while true; do
+    if mkdir "$LOCK_DIR" 2>/dev/null; then
+        echo "Lock acquired: $LOCK_DIR" | tee -a "$DEBUG_FILE"
+        break
+    else
+        if [ -d "$LOCK_DIR" ] && [ -z "$(ls -A "$LOCK_DIR")" ]; then
+            echo "Lock directory exists but is empty, reusing: $LOCK_DIR" | tee -a "$DEBUG_FILE"
+            break
+        fi
+        echo "Waiting for lock on directory: $LOCK_DIR" | tee -a "$DEBUG_FILE"
+        sleep 0.1
+    fi
+done
+
+# Set the correct permissions for the lock directory
+CURRENT_USER=$(whoami)
+CURRENT_GROUP=$(id -gn)
+chown "$CURRENT_USER:$CURRENT_GROUP" "$LOCK_DIR"
+chmod 2775 "$LOCK_DIR"
+
+trap 'echo "Removing lock directory: $LOCK_DIR" | tee -a "$DEBUG_FILE"; rmdir "$LOCK_DIR"' EXIT
 
 # Run the aws s3 sync command with provided arguments
 echo "Starting aws s3 sync" | tee -a "$DEBUG_FILE"
