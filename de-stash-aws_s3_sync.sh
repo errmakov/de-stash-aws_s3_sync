@@ -47,6 +47,7 @@ fi
 
 # Handle options
 SHOW_OUTPUT=false
+SYNC_ARGS=()
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --o)
@@ -65,24 +66,25 @@ while [[ "$#" -gt 0 ]]; do
             usage
             ;;
         *)
-            break
+            SYNC_ARGS+=("$1")
+            shift
             ;;
     esac
 done
 
 # Check if source and destination are provided
-if [ "$#" -lt 2 ]; then
+if [ "${#SYNC_ARGS[@]}" -lt 2 ]; then
     usage
 fi
 
 START_TIME=$(date +"%Y-%m-%d %H:%M:%S")
 
 # Extract source and destination from the arguments
-SOURCE=$1
-DESTINATION=$2
+SOURCE=${SYNC_ARGS[0]}
+DESTINATION=${SYNC_ARGS[1]}
 
 # Shift arguments to pass any additional options to aws s3 sync
-shift 2
+SYNC_ARGS=("${SYNC_ARGS[@]:2}")
 
 # Ensure the log file directory exists
 LOG_FILE_DIR=$(dirname "$LOG_FILE")
@@ -95,7 +97,7 @@ exec 200>"$LOCK_FILE"
 flock -n 200 || exit 1
 
 # Run the aws s3 sync command with provided arguments
-SYNC_OUTPUT=$(aws s3 sync "$SOURCE" "$DESTINATION" "$@" 2>&1)
+SYNC_OUTPUT=$(aws s3 sync "$SOURCE" "$DESTINATION" "${SYNC_ARGS[@]}" 2>&1)
 RETURN_CODE=$?
 
 END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
@@ -114,7 +116,7 @@ DURATION=$((END_TS - START_TS))
 extra_info=$(jq -n \
     --arg source "$SOURCE" \
     --arg destination "$DESTINATION" \
-    --arg options "$*" \
+    --arg options "${SYNC_ARGS[*]}" \
     --arg sync_output "$SYNC_OUTPUT" \
     --arg start_time "$START_TIME" \
     --arg end_time "$END_TIME" \
