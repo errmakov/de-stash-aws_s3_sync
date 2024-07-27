@@ -20,20 +20,7 @@ usage() {
 
 # Default values for lock directory and log file
 LOCK_DIR="/var/lock/aws_s3_sync.lock"
-LOG_FILE="/var/log/aws_s3_sync.log"
-
-# Get the directory where the script is located
-SCRIPT_DIR=$(dirname "$0")
-
-# Load environment variables from .env.aws_s3_sync file located in the same directory as the script
-if [ -f "$SCRIPT_DIR/.env.aws_s3_sync" ]; then
-    set -a
-    source "$SCRIPT_DIR/.env.aws_s3_sync"
-    set +a
-else
-    echo ".env.aws_s3_sync file not found in $SCRIPT_DIR."
-    exit 1
-fi
+LOG_FILE="/log/aws_s3_sync.log"
 
 # Generate a unique ID for this script call
 UNIQUE_ID=$(date +%s%N)-$$-$(od -vAn -N4 -tu4 < /dev/urandom | tr -d ' ')
@@ -105,6 +92,11 @@ shift 2
 # Ensure the log file directory exists
 LOG_FILE_DIR=$(dirname "$LOG_FILE")
 mkdir -p "$LOG_FILE_DIR"
+
+# Debugging output
+echo "Running aws s3 sync from $SOURCE to $DESTINATION with options: $*"
+echo "Log file: $LOG_FILE"
+echo "Lock dir: $LOCK_DIR"
 
 # Run the aws s3 sync command with provided arguments
 SYNC_OUTPUT=$(aws s3 sync "$SOURCE" "$DESTINATION" "$@" 2>&1)
