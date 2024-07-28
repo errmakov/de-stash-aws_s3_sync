@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 
+"""
+Usage: aws_s3_sync.py [options] <source> <destination> [additional aws s3 sync options]
+
+Options:
+  --o                 Show output details on successful sync
+  --lock <file>       File for lock (default: /var/lock/aws_s3_sync.lock)
+  --log <file>        Log file path (default: /var/log/aws_s3_sync.log)
+  --help, -h, -?      Display this help message
+
+Examples:
+  aws_s3_sync.py /local/dir s3://bucket/path
+  aws_s3_sync.py --o /local/dir s3://bucket/path --delete
+  aws_s3_sync.py --lock /tmp/aws_s3_sync.lock --log /tmp/aws_s3_sync.log /local/dir s3://bucket/path
+"""
+
 import argparse
 import json
 import os
@@ -23,15 +38,15 @@ def log_message(log_file, unique_id, status, message, extra_info):
 
 def main():
     parser = argparse.ArgumentParser(description='AWS S3 Sync Script')
-    parser.add_argument('source', help='Source directory')
-    parser.add_argument('destination', help='Destination S3 bucket')
-    parser.add_argument('sync_options', nargs=argparse.REMAINDER, help='Additional aws s3 sync options')
     parser.add_argument('--o', action='store_true', help='Show output details on successful sync')
     parser.add_argument('--lock', default='/var/lock/aws_s3_sync.lock', help='File for lock')
     parser.add_argument('--log', default='/var/log/aws_s3_sync.log', help='Log file path')
-    
+    parser.add_argument('source', help='Source directory')
+    parser.add_argument('destination', help='Destination S3 bucket')
+    parser.add_argument('sync_options', nargs=argparse.REMAINDER, help='Additional aws s3 sync options')
+
     args = parser.parse_args()
-    
+
     unique_id = f"{int(time.time()*1e6)}-{os.getpid()}"
     
     start_time = datetime.now()
@@ -43,12 +58,10 @@ def main():
     except IOError:
         print("Error: Could not acquire lock")
         return
-    
-    # Filter out --o from sync options
-    sync_options = [opt for opt in args.sync_options if opt != '--o']
 
     # Run the aws s3 sync command
-    cmd = ["aws", "s3", "sync", args.source, args.destination] + sync_options
+    cmd = ["aws", "s3", "sync", args.source, args.destination] + args.sync_options
+    
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         sync_output = result.stdout
@@ -63,7 +76,7 @@ def main():
     extra_info = {
         "source": args.source,
         "destination": args.destination,
-        "options": " ".join(sync_options),
+        "options": " ".join(args.sync_options),
         "sync_output": sync_output,
         "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
         "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
