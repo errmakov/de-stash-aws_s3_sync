@@ -1,4 +1,4 @@
-# aws_s3_sync.sh
+# aws_s3_sync.py
 
 Wrapper for "aws s3 sync"
 
