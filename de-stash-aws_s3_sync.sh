@@ -112,16 +112,20 @@ else
 fi
 DURATION=$((END_TS - START_TS))
 
+# Save the sync output to a temporary file
+SYNC_OUTPUT_FILE=$(mktemp)
+echo "$SYNC_OUTPUT" > "$SYNC_OUTPUT_FILE"
+
 # Construct extra information for the log
 extra_info=$(jq -n \
     --arg source "$SOURCE" \
     --arg destination "$DESTINATION" \
     --arg options "${SYNC_ARGS[*]}" \
-    --arg sync_output "$SYNC_OUTPUT" \
+    --slurpfile sync_output "$SYNC_OUTPUT_FILE" \
     --arg start_time "$START_TIME" \
     --arg end_time "$END_TIME" \
     --arg duration "$(date -u -d @$DURATION +"%H:%M:%S")" \
-    '{source: $source, destination: $destination, options: $options, sync_output: $sync_output, start_time: $start_time, end_time: $end_time, duration: $duration}')
+    '{source: $source, destination: $destination, options: $options, sync_output: $sync_output[0], start_time: $start_time, end_time: $end_time, duration: $duration}')
 
 # Handle different return codes
 if [ $RETURN_CODE -eq 0 ]; then
@@ -132,13 +136,16 @@ if [ $RETURN_CODE -eq 0 ]; then
 elif [ $RETURN_CODE -eq 1 ]; then
     log_message "error" "Sync failed due to a general error, exit code 1" "$extra_info"
     echo -e "Error.\nExit code 1: ${SYNC_OUTPUT}\nUNIQUE_ID ${UNIQUE_ID}" >&2
-elif [ $RETURN_CODE -eq 2]; then
+elif [ $RETURN_CODE -eq 2 ]; then
     log_message "error" "Sync failed due to a permission error, exit code 2" "$extra_info"
     echo -e "Error.\nExit code 2: ${SYNC_OUTPUT}\nUNIQUE_ID ${UNIQUE_ID}" >&2
 else
     log_message "error" "Sync failed with exit code $RETURN_CODE." "$extra_info"
     echo -e "Error.\nExit code ${RETURN_CODE}: ${SYNC_OUTPUT}\nUNIQUE_ID ${UNIQUE_ID}" >&2
 fi
+
+# Remove the temporary file
+rm -f "$SYNC_OUTPUT_FILE"
 
 # Release the lock
 flock -u 200
