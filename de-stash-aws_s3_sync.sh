@@ -125,7 +125,7 @@ extra_info=$(jq -n \
     --arg start_time "$START_TIME" \
     --arg end_time "$END_TIME" \
     --arg duration "$(date -u -d @$DURATION +"%H:%M:%S")" \
-    '{source: $source, destination: $destination, options: $options, sync_output: $sync_output[0], start_time: $start_time, end_time: $end_time, duration: $duration}')
+    '{source: $source, destination: $destination, options: $options, sync_output: ($sync_output | join("")), start_time: $start_time, end_time: $end_time, duration: $duration}')
 
 # Handle different return codes
 if [ $RETURN_CODE -eq 0 ]; then
