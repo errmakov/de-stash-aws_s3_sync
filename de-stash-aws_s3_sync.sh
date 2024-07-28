@@ -34,7 +34,7 @@ log_message() {
         --arg unique_id "$UNIQUE_ID" \
         --arg status "$status" \
         --arg message "$message" \
-        --arg extra_info "$extra_info" \
+        --argjson extra_info "$extra_info" \
         '{timestamp: $timestamp, unique_id: $unique_id, status: $status, message: $message, extra_info: $extra_info}')
 
     echo "$log_entry" >> "$LOG_FILE"
@@ -116,6 +116,20 @@ DURATION=$((END_TS - START_TS))
 SYNC_OUTPUT_FILE=$(mktemp)
 echo "$SYNC_OUTPUT" > "$SYNC_OUTPUT_FILE"
 
+# Debug: Check if the temporary file was created and is readable
+if [ ! -f "$SYNC_OUTPUT_FILE" ]; then
+    echo "Error: Temporary file $SYNC_OUTPUT_FILE was not created." >&2
+    exit 1
+fi
+if [ ! -r "$SYNC_OUTPUT_FILE" ]; then
+    echo "Error: Temporary file $SYNC_OUTPUT_FILE is not readable." >&2
+    exit 1
+fi
+
+# Debug: Output the content of the temporary file
+echo "Debug: Temporary file content:"
+cat "$SYNC_OUTPUT_FILE"
+
 # Construct extra information for the log
 extra_info=$(jq -n \
     --arg source "$SOURCE" \
@@ -125,7 +139,7 @@ extra_info=$(jq -n \
     --arg end_time "$END_TIME" \
     --arg duration "$(date -u -d @$DURATION +"%H:%M:%S")" \
     --slurpfile sync_output "$SYNC_OUTPUT_FILE" \
-    '{source: $source, destination: $destination, options: $options, sync_output: $sync_output | join(""), start_time: $start_time, end_time: $end_time, duration: $duration}')
+    '{source: $source, destination: $destination, options: $options, sync_output: ($sync_output | join("")), start_time: $start_time, end_time: $end_time, duration: $duration}')
 
 # Handle different return codes
 if [ $RETURN_CODE -eq 0 ]; then
