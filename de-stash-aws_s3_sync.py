@@ -7,7 +7,8 @@ import subprocess
 import tempfile
 import time
 from datetime import datetime
-import fcntl  # Add this import
+import fcntl
+import sys  # Add this import
 
 # Function to log messages
 def log_message(log_file, unique_id, status, message, extra_info):
