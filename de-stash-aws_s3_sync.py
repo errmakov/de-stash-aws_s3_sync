@@ -7,21 +7,7 @@ import subprocess
 import tempfile
 import time
 from datetime import datetime
-
-# Function to display usage information
-def usage():
-    print(f"Usage: {os.path.basename(__file__)} [options] <source> <destination> [additional aws s3 sync options]")
-    print("")
-    print("Options:")
-    print("  --o                 Show output details on successful sync")
-    print("  --lock <file>       File for lock (default: /var/lock/aws_s3_sync.lock)")
-    print("  --log <file>        Log file path (default: /var/log/aws_s3_sync.log)")
-    print("  --help, -h, -?      Display this help message")
-    print("")
-    print("Examples:")
-    print(f"  {os.path.basename(__file__)} /local/dir s3://bucket/path")
-    print(f"  {os.path.basename(__file__)} --o /local/dir s3://bucket/path --delete")
-    print(f"  {os.path.basename(__file__)} --lock /tmp/aws_s3_sync.lock --log /tmp/aws_s3_sync.log /local/dir s3://bucket/path")
+import fcntl  # Add this import
 
 # Function to log messages
 def log_message(log_file, unique_id, status, message, extra_info):
