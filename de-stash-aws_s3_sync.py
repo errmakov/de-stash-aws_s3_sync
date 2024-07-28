@@ -8,7 +8,7 @@ import tempfile
 import time
 from datetime import datetime
 import fcntl
-import sys  # Add this import
+import sys
 
 # Function to log messages
 def log_message(log_file, unique_id, status, message, extra_info):
@@ -45,8 +45,11 @@ def main():
         print("Error: Could not acquire lock")
         return
     
+    # Filter out --o from sync options
+    sync_options = [opt for opt in args.sync_options if opt != '--o']
+
     # Run the aws s3 sync command
-    cmd = ["aws", "s3", "sync", args.source, args.destination] + args.sync_options
+    cmd = ["aws", "s3", "sync", args.source, args.destination] + sync_options
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         sync_output = result.stdout
@@ -61,7 +64,7 @@ def main():
     extra_info = {
         "source": args.source,
         "destination": args.destination,
-        "options": " ".join(args.sync_options),
+        "options": " ".join(sync_options),
         "sync_output": sync_output,
         "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
         "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
