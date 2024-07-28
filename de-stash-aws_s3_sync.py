@@ -4,7 +4,6 @@ import argparse
 import json
 import os
 import subprocess
-import tempfile
 import time
 from datetime import datetime
 import fcntl
