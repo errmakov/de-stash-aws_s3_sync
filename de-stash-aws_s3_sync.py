@@ -52,12 +52,12 @@ def main():
     start_time = datetime.now()
     
     # Acquire the lock
-    try:
-        lock_file = open(args.lock, 'w')
-        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except IOError:
-        print("Error: Could not acquire lock")
-        return
+    # try:
+    #     lock_file = open(args.lock, 'w')
+    #     fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    # except IOError:
+    #     print("Error: Could not acquire lock")
+    #     return
 
     # Run the aws s3 sync command
     cmd = ["aws", "s3", "sync", args.source, args.destination] + args.sync_options
