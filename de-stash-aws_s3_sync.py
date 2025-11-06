@@ -20,14 +20,14 @@ import json
 import os
 import subprocess
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 import fcntl
 import sys
 
 # Function to log messages
 def log_message(log_file, unique_id, status, message, extra_info):
     log_entry = {
-        "timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "unique_id": unique_id,
         "status": status,
         "message": message,
@@ -48,9 +48,9 @@ def main():
     args = parser.parse_args()
 
     unique_id = f"{int(time.time()*1e6)}-{os.getpid()}"
-    
+
     start_time = datetime.now()
-    
+
     # Acquire the lock
     # try:
     #     lock_file = open(args.lock, 'w')
@@ -61,13 +61,13 @@ def main():
 
     # Run the aws s3 sync command
     cmd = ["aws", "s3", "sync", args.source, args.destination] + args.sync_options
-    
+
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         sync_output = result.stdout
         return_code = 0
     except subprocess.CalledProcessError as e:
-        sync_output = e.stdout + "\n" + e.stderr
+        sync_output = (e.stdout or "") + "\n" + (e.stderr or "")
         return_code = e.returncode
 
     end_time = datetime.now()
@@ -95,9 +95,10 @@ def main():
             message = "Sync failed due to a permission error, exit code 2"
         else:
             message = f"Sync failed with exit code {return_code}"
-        
+
         log_message(args.log, unique_id, status, message, extra_info)
         print(f"Error.\nExit code {return_code}: {sync_output}\nUNIQUE_ID {unique_id}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()
+
